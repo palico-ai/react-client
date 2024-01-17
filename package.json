@@ -1,12 +1,7 @@
 {
-  "name": "@palico-ai/react-client",
+  "name": "@palico-ai/react",
   "version": "0.0.0-development",
   "description": "",
-  "main": "./lib/cjs/index.js",
-  "types": "./lib/cjs/types/index.d.ts",
-  "files": [
-    "lib/**/*"
-  ],
   "bugs": {
     "url": "https://github.com/palico-ai/react-client/issues"
   },
@@ -23,30 +18,29 @@
   "publishConfig": {
     "access": "public"
   },
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./lib/esm/types/index.d.ts",
-        "default": "./lib/esm/index.mjs"
-      },
-      "require": {
-        "types": "./lib/cjs/types/index.d.ts",
-        "default": "./lib/cjs/index.js"
-      }
-    }
-  },
   "scripts": {
-    "clean": "rm -rf ./lib",
-    "build": "npm run clean && npm run build:esm && npm run build:cjs",
-    "build:esm": "tsc -p tsconfig.esm.json && mv lib/esm/index.js lib/esm/index.mjs",
-    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "clean": "rm -rf ./dist",
+    "build": "rollup -c --bundleConfigAsCjs",
     "semantic-release": "semantic-release",
     "prepack": "npm run build"
   },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types.d.ts",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/react": "^18.2.48",
+    "react": "^18.2.0",
+    "rollup": "^4.9.5",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
     "semantic-release": "^23.0.0",
     "ts-node": "^10.9.1",
-    "typescript": "^4.7.4"
+    "tslib": "^2.6.2",
+    "typescript": "^4.9.5"
   },
   "keywords": [],
   "author": "",
