@@ -13,7 +13,7 @@ export interface AgentMessage {
 export interface AgentCallResponse {
   finishReason: OpenAI.Chat.ChatCompletion.Choice['finish_reason']
   message: AgentMessage
-  conversationId: string
+  conversationId: number
 }
 
 export interface AgentAPIParams {
@@ -29,6 +29,18 @@ export interface ReplyAsUserParams {
   deploymentId: number
   conversationId: number
   message: string
+}
+
+export interface ToolExecutionMessage {
+  functionName: string
+  toolId: string
+  output: Record<string, unknown>
+}
+
+export interface ReplyToToolCallParams {
+  deploymentId: number
+  conversationId: number
+  toolOutputs: ToolExecutionMessage[]
 }
 
 export class AgentAPI {
@@ -55,6 +67,20 @@ export class AgentAPI {
       },
       body: JSON.stringify({
         message: params.message
+      })
+    })
+    const json = await response.json()
+    return json
+  }
+
+  public static async replyToToolCall (params: ReplyToToolCallParams): Promise<AgentCallResponse> {
+    const response = await fetch(`${AgentAPI.BASE_URL}/${params.deploymentId}/${params.conversationId}/tool-call-reply`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        toolOutputs: params.toolOutputs
       })
     })
     const json = await response.json()
