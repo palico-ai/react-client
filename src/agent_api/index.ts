@@ -23,12 +23,14 @@ export interface AgentAPIParams {
 export interface NewConversationParams {
   deploymentId: number
   message: string
+  context?: Record<string, unknown>
 }
 
 export interface ReplyAsUserParams {
   deploymentId: number
   conversationId: number
   message: string
+  context?: Record<string, unknown>
 }
 
 export interface ToolExecutionMessage {
