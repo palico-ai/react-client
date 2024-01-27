@@ -11,7 +11,7 @@ export interface PalicoContextProps {
   loading: boolean
   deploymentId: number
   conversationHistory: ChatMessage[]
-  sendMessage: (message: string) => Promise<void>
+  sendMessage: (message: string, context: Record<string, unknown>) => Promise<void>
 }
 
 export const PalicoContext = React.createContext<PalicoContextProps>({
@@ -29,6 +29,11 @@ export interface PalicoContextProviderProps {
   children?: any
 }
 
+export interface PendingMessagePayload {
+  message: string
+  context: Record<string, unknown>
+}
+
 export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
   deploymentId,
   tools,
@@ -38,7 +43,7 @@ export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
   const [conversationId, setConversationId] = React.useState<number>()
   const [messageHistory, setMessageHistory] = React.useState<ChatMessage[]>([])
   // TODO: Convert to step-based pending message (create user reply -> handle user reply -> handle tool call -> end)
-  const [pendingMessage, setPendingMessage] = React.useState<string>()
+  const [pendingMessage, setPendingMessage] = React.useState<PendingMessagePayload>()
 
   useEffect(() => {
     const callTool = async (tool: ChatCompletionMessageToolCall): Promise<ToolExecutionMessage> => {
@@ -81,14 +86,14 @@ export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
     }
 
     const handlePendingMessage = async (): Promise<void> => {
-      console.log('Handle pending message')
       if (!pendingMessage) return
       try {
         setPendingMessage(undefined)
         if (!conversationId) {
           const response = await AgentAPI.newConversation({
             deploymentId,
-            message: pendingMessage
+            message: pendingMessage.message,
+            context: pendingMessage.context
           })
           setConversationId(response.conversationId)
           await handleAgentResponse(response, response.conversationId)
@@ -96,12 +101,11 @@ export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
           const response = await AgentAPI.replyAsUser({
             deploymentId,
             conversationId,
-            message: pendingMessage
+            message: pendingMessage.message,
+            context: pendingMessage.context
           })
           await handleAgentResponse(response, conversationId)
         }
-      } catch (e) {
-        console.log(e)
       } finally {
         setLoading(false)
       }
@@ -110,9 +114,12 @@ export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
     void handlePendingMessage()
   }, [conversationId, deploymentId, messageHistory, pendingMessage, tools])
 
-  const sendMessage = async (message: string): Promise<void> => {
+  const sendMessage = async (message: string, context: Record<string, unknown>): Promise<void> => {
     setLoading(true)
-    setPendingMessage(message)
+    setPendingMessage({
+      message,
+      context
+    })
     setMessageHistory([
       ...messageHistory,
       {
