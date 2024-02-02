@@ -46,8 +46,8 @@ export interface ReplyToToolCallParams {
 }
 
 export class AgentAPI {
-  private static readonly BASE_URL = 'https://n2ixeodlxi.execute-api.us-east-1.amazonaws.com/prod/deployment'
-  // private static readonly BASE_URL = 'http://localhost:8001/deployment'
+  // private static readonly BASE_URL = 'https://n2ixeodlxi.execute-api.us-east-1.amazonaws.com/prod/deployment'
+  private static readonly BASE_URL = 'http://localhost:8001/deployment'
 
   public static async newConversation (params: NewConversationParams): Promise<AgentCallResponse> {
     const response = await fetch(`${AgentAPI.BASE_URL}/${params.deploymentId}/new-conversation`, {
@@ -68,7 +68,8 @@ export class AgentAPI {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: params.message
+        message: params.message,
+        context: params.context
       })
     })
     const json = await response.json()
