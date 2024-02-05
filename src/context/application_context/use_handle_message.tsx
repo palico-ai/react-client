@@ -8,7 +8,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { type ChatMessage, type ToolHandler } from '.'
 
 interface MessageHandlerParams {
-  deploymentId: number
+  apiURL: string
   tools: Record<string, ToolHandler<any, any>>
 }
 
@@ -58,7 +58,7 @@ type MessageHandlerTask =
   | ReplyToToolCallTask
 
 const useSendMessage = (params: MessageHandlerParams): MessageHandlerOutput => {
-  const { deploymentId } = params
+  const { apiURL } = params
   const [taskStack, setTaskStack] = useState<MessageHandlerTask[]>([])
   const [activeTask, setActiveTask] = useState<MessageHandlerTask>()
   const [toolExecutionMessages, setToolExecutionMessages] = useState<ToolExecutionMessage[]>([])
@@ -83,7 +83,7 @@ const useSendMessage = (params: MessageHandlerParams): MessageHandlerOutput => {
       if (!conversationId) {
         console.log('conversationId not found')
         response = await AgentAPI.newConversation({
-          deploymentId,
+          apiURL,
           message,
           context
         })
@@ -91,7 +91,7 @@ const useSendMessage = (params: MessageHandlerParams): MessageHandlerOutput => {
       } else {
         console.log('conversationId found')
         response = await AgentAPI.replyAsUser({
-          deploymentId,
+          apiURL,
           conversationId,
           message,
           context
@@ -197,7 +197,7 @@ const useSendMessage = (params: MessageHandlerParams): MessageHandlerOutput => {
       }
       console.log('Replying to tool call')
       const agentResponse = await AgentAPI.replyToToolCall({
-        deploymentId,
+        apiURL,
         conversationId,
         toolOutputs: toolExecutionMessages
       })
