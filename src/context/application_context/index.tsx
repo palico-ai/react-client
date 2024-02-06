@@ -7,15 +7,18 @@ export interface ChatMessage {
 }
 
 export interface PalicoContextProps {
+  apiURL: string
   loading: boolean
-  deploymentId: number
   conversationHistory: ChatMessage[]
-  sendMessage: (message: string, context: Record<string, unknown>) => Promise<void>
+  sendMessage: (
+    message: string,
+    context: Record<string, unknown>
+  ) => Promise<void>
 }
 
 export const PalicoContext = React.createContext<PalicoContextProps>({
+  apiURL: '',
   loading: false,
-  deploymentId: -1,
   conversationHistory: [],
   sendMessage: async () => {}
 })
@@ -23,8 +26,8 @@ export const PalicoContext = React.createContext<PalicoContextProps>({
 export type ToolHandler<Input, Output> = (input: Input) => Promise<Output>
 
 export interface PalicoContextProviderProps {
+  apiURL: string
   tools: Record<string, ToolHandler<any, any>>
-  deploymentId: number
   children?: any
 }
 
@@ -34,7 +37,7 @@ export interface PendingMessagePayload {
 }
 
 export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
-  deploymentId,
+  apiURL,
   tools,
   children
 }) => {
@@ -43,11 +46,14 @@ export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
     messageHistory,
     loading
   } = useSendMessage({
-    deploymentId,
+    apiURL,
     tools
   })
 
-  const sendMessage = async (message: string, context: Record<string, unknown>): Promise<void> => {
+  const sendMessage = async (
+    message: string,
+    context: Record<string, unknown>
+  ): Promise<void> => {
     console.log('Calling sendMessage')
     await handleSendMessage(message, context)
     console.log('Done calling sendMessage')
@@ -55,7 +61,12 @@ export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
 
   return (
     <PalicoContext.Provider
-      value={{ deploymentId, conversationHistory: messageHistory, sendMessage, loading }}
+      value={{
+        apiURL,
+        conversationHistory: messageHistory,
+        sendMessage,
+        loading
+      }}
     >
       {children}
     </PalicoContext.Provider>

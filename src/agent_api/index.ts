@@ -21,13 +21,13 @@ export interface AgentAPIParams {
 }
 
 export interface NewConversationParams {
-  deploymentId: number
+  apiURL: string
   message: string
   context?: Record<string, unknown>
 }
 
 export interface ReplyAsUserParams {
-  deploymentId: number
+  apiURL: string
   conversationId: number
   message: string
   context?: Record<string, unknown>
@@ -40,53 +40,79 @@ export interface ToolExecutionMessage {
 }
 
 export interface ReplyToToolCallParams {
-  deploymentId: number
+  apiURL: string
   conversationId: number
   toolOutputs: ToolExecutionMessage[]
 }
 
 export class AgentAPI {
-  // private static readonly BASE_URL = 'https://n2ixeodlxi.execute-api.us-east-1.amazonaws.com/prod/deployment'
-  private static readonly BASE_URL = 'http://localhost:8001/deployment'
-
   public static async newConversation (params: NewConversationParams): Promise<AgentCallResponse> {
-    const response = await fetch(`${AgentAPI.BASE_URL}/${params.deploymentId}/new-conversation`, {
+    const payload = {
+      message: params.message,
+      context: params.context
+    }
+    const response = await fetch(params.apiURL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(params)
+      body: JSON.stringify({
+        action: 'new_conversation',
+        payload
+      })
     })
-    const json = await response.json()
-    return json
+    const data = await response.json()
+    if (response.status !== 200) {
+      console.error(data)
+      throw new Error('Failed to start new conversation.')
+    }
+    return data
   }
 
   public static async replyAsUser (params: ReplyAsUserParams): Promise<AgentCallResponse> {
-    const response = await fetch(`${AgentAPI.BASE_URL}/${params.deploymentId}/${params.conversationId}/user-reply`, {
+    const payload = {
+      conversationId: params.conversationId,
+      message: params.message,
+      context: params.context
+    }
+    const response = await fetch(params.apiURL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: params.message,
-        context: params.context
+        action: 'reply_as_user',
+        payload
       })
     })
-    const json = await response.json()
-    return json
+    const data = await response.json()
+    if (response.status !== 200) {
+      console.error(data)
+      throw new Error('Failed to reply as user.')
+    }
+    return data
   }
 
   public static async replyToToolCall (params: ReplyToToolCallParams): Promise<AgentCallResponse> {
-    const response = await fetch(`${AgentAPI.BASE_URL}/${params.deploymentId}/${params.conversationId}/tool-call-reply`, {
+    const payload = {
+      conversationId: params.conversationId,
+      toolOutputs: params.toolOutputs
+    }
+    const response = await fetch(params.apiURL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        toolOutputs: params.toolOutputs
+        action: 'reply_as_tool',
+        payload
       })
     })
-    const json = await response.json()
-    return json
+    const data = await response.json()
+    if (response.status !== 200) {
+      console.error(data)
+      throw new Error('Failed to reply to tool call.')
+    }
+    return data
   }
 }
