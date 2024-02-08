@@ -1,14 +1,11 @@
 import { type ChatCompletionMessageToolCall } from 'openai/resources'
-import {
-  type ToolExecutionMessage,
-  type AgentCallResponse,
-  AgentAPI
-} from '../../agent_api'
 import { useEffect, useMemo, useState } from 'react'
 import { type ChatMessage, type ToolHandler } from '.'
+import { type ToolExecutionMessage, type AgentCallResponse } from '../../client/types'
+import { type AgentRequestHandler, AgentRequestType } from '@palico-ai/client-js'
 
 interface MessageHandlerParams {
-  apiURL: string
+  requestHandler: AgentRequestHandler
   tools: Record<string, ToolHandler<any, any>>
 }
 
@@ -58,7 +55,7 @@ type MessageHandlerTask =
   | ReplyToToolCallTask
 
 const useSendMessage = (params: MessageHandlerParams): MessageHandlerOutput => {
-  const { apiURL } = params
+  const { requestHandler } = params
   const [taskStack, setTaskStack] = useState<MessageHandlerTask[]>([])
   const [activeTask, setActiveTask] = useState<MessageHandlerTask>()
   const [toolExecutionMessages, setToolExecutionMessages] = useState<ToolExecutionMessage[]>([])
@@ -82,19 +79,23 @@ const useSendMessage = (params: MessageHandlerParams): MessageHandlerOutput => {
       console.log(task)
       if (!conversationId) {
         console.log('conversationId not found')
-        response = await AgentAPI.newConversation({
-          apiURL,
-          message,
-          context
+        response = await requestHandler({
+          type: AgentRequestType.NewConversation,
+          payload: {
+            message,
+            context
+          }
         })
         setConversationId(response.conversationId)
       } else {
         console.log('conversationId found')
-        response = await AgentAPI.replyAsUser({
-          apiURL,
-          conversationId,
-          message,
-          context
+        response = await requestHandler({
+          type: AgentRequestType.ReplyAsUser,
+          payload: {
+            conversationId,
+            message,
+            context
+          }
         })
       }
       console.log('handleReviewPendingMessageTask response', response)
@@ -196,10 +197,12 @@ const useSendMessage = (params: MessageHandlerParams): MessageHandlerOutput => {
         throw new Error('Conversation ID not found')
       }
       console.log('Replying to tool call')
-      const agentResponse = await AgentAPI.replyToToolCall({
-        apiURL,
-        conversationId,
-        toolOutputs: toolExecutionMessages
+      const agentResponse = await requestHandler({
+        type: AgentRequestType.ReplyAsTool,
+        payload: {
+          conversationId,
+          toolOutputs: toolExecutionMessages
+        }
       })
       console.log('agent response', agentResponse)
       setToolExecutionMessages([])
