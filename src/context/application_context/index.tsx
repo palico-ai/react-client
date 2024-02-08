@@ -1,5 +1,6 @@
 import React from 'react'
 import useSendMessage from './use_handle_message'
+import { type AgentRequestHandler } from '@palico-ai/client-js'
 
 export interface ChatMessage {
   content: string
@@ -7,7 +8,6 @@ export interface ChatMessage {
 }
 
 export interface PalicoContextProps {
-  apiURL: string
   loading: boolean
   conversationHistory: ChatMessage[]
   sendMessage: (
@@ -17,7 +17,6 @@ export interface PalicoContextProps {
 }
 
 export const PalicoContext = React.createContext<PalicoContextProps>({
-  apiURL: '',
   loading: false,
   conversationHistory: [],
   sendMessage: async () => {}
@@ -26,7 +25,7 @@ export const PalicoContext = React.createContext<PalicoContextProps>({
 export type ToolHandler<Input, Output> = (input: Input) => Promise<Output>
 
 export interface PalicoContextProviderProps {
-  apiURL: string
+  requestHandler: AgentRequestHandler
   tools: Record<string, ToolHandler<any, any>>
   children?: any
 }
@@ -37,7 +36,7 @@ export interface PendingMessagePayload {
 }
 
 export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
-  apiURL,
+  requestHandler,
   tools,
   children
 }) => {
@@ -46,7 +45,7 @@ export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
     messageHistory,
     loading
   } = useSendMessage({
-    apiURL,
+    requestHandler,
     tools
   })
 
@@ -62,7 +61,6 @@ export const PalicoContextProvider: React.FC<PalicoContextProviderProps> = ({
   return (
     <PalicoContext.Provider
       value={{
-        apiURL,
         conversationHistory: messageHistory,
         sendMessage,
         loading
