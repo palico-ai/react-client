@@ -1,8 +1,9 @@
 import { type ChatCompletionMessageToolCall } from 'openai/resources'
 import { useEffect, useMemo, useState } from 'react'
 import { type ChatMessage, type ToolHandler } from '.'
-import { type ToolExecutionMessage, type AgentCallResponse } from '../../client/types'
-import { type AgentRequestHandler, AgentRequestType } from '@palico-ai/client-js'
+import { type AgentRequestHandler, AgentRequestType, type ToolExecutionMessage, type AgentCallResponse } from '@palico-ai/client-js'
+
+// TODO: Refactor this to be more readable and less error-prone
 
 interface MessageHandlerParams {
   requestHandler: AgentRequestHandler

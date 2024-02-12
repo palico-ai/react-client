@@ -14,6 +14,7 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true
   },
+  "include": ["src/**/*.ts", "src/**/*.tsx", ".eslintrc.js"],
   "exclude": [
     "dist",
     "node_modules",
