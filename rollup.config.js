@@ -26,11 +26,11 @@ export default [
       resolve(),
       commonjs(),
       typescript({ tsconfig: './tsconfig.json' }),
-      terser({
-        compress: {
-          drop_console: true
-        }
-      })
+      // terser({
+      //   compress: {
+      //     drop_console: true
+      //   }
+      // })
     ]
   },
   {
