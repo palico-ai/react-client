@@ -1,5 +1,4 @@
-import { TextField } from '@mui/material'
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 export interface ChatInputProps {
   onSend: (message: string) => Promise<void>
@@ -12,11 +11,13 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   disabled,
   placeholder = 'Type a message'
 }) => {
-  const inputRef = React.useRef<HTMLInputElement>(null)
+  const inputRef = React.useRef<HTMLInputElement | null>(null)
   const [message, setMessage] = React.useState('')
   const [loading, setLoading] = React.useState(false)
 
-  const handleFormSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleFormSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     event.preventDefault()
     try {
       setLoading(true)
@@ -30,20 +31,30 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setMessage(event.target.value)
   }
-
   const enableInput = useMemo(() => !loading && !disabled, [loading, disabled])
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current?.focus()
+    }
+  }, [inputRef, enableInput])
 
   return (
     <form onSubmit={handleFormSubmit}>
-      <TextField
-        autoComplete="off"
+      <input
+        style={{
+          width: '100%',
+          padding: '10px',
+          fontSize: '16px',
+          border: '1px solid #ccc',
+          borderRadius: '4px',
+          boxSizing: 'border-box'
+        }}
+        autoComplete='off'
+        disabled={!enableInput}
         placeholder={placeholder}
         ref={inputRef}
-        disabled={!enableInput}
-        inputRef={inputRef}
-        size="small"
-        fullWidth
-        variant="outlined"
+        type="text"
         value={message}
         onChange={handleChange}
       />

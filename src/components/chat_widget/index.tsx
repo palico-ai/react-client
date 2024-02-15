@@ -1,5 +1,5 @@
 import React from 'react'
-import { Paper, Popover } from '@mui/material'
+import { Box, Popover } from '@mui/material'
 import ChatUI, { type ChatUIProps } from '../chat'
 import { type PropsOf } from '@emotion/react'
 
@@ -37,14 +37,9 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
     >
-      <Paper
-        sx={{
-          width,
-          height
-        }}
-      >
+      <Box sx={{ width, height }}>
         <ChatUI {...chatUIProps} />
-      </Paper>
+      </Box>
     </Popover>
   )
 }

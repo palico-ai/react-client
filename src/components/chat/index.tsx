@@ -5,14 +5,16 @@ import { PalicoContext } from '../../context'
 import { ChatHistory } from './history'
 import { ChatInput } from './input'
 
+export type GetSendMessageParamsFN = (userInput: string) => Promise<{
+  message: string
+  context: Record<string, unknown>
+}>
+
 export interface ChatUIProps {
   headerTitle?: string
   inputPlaceholder?: string
   initialPlaceholderAgentMessage?: string
-  getSendMessageParams?: (userInput: string) => Promise<{
-    message: string
-    params: Record<string, unknown>
-  }>
+  getSendMessageParams?: GetSendMessageParamsFN
 }
 
 const DEFAULT_VALUES = {
@@ -27,16 +29,17 @@ const ChatUI: React.FC<ChatUIProps> = ({
   initialPlaceholderAgentMessage = DEFAULT_VALUES.initialPlaceholderAgentMessage,
   getSendMessageParams
 }) => {
-  const { conversationHistory, sendMessage } = useContext(PalicoContext)
+  const { conversationHistory, loading, sendMessage } = useContext(PalicoContext)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
   const handleSend = async (message: string): Promise<void> => {
+    if (!sendMessage) throw new Error('sendMessage is not defined')
     try {
       if (getSendMessageParams) {
-        const { message: newMessage, params } = await getSendMessageParams(
+        const { message: newMessage, context } = await getSendMessageParams(
           message
         )
-        await sendMessage(newMessage, params)
+        await sendMessage(newMessage, context)
       } else {
         await sendMessage(message, {})
       }
@@ -56,8 +59,10 @@ const ChatUI: React.FC<ChatUIProps> = ({
       alignItems="stretch"
       spacing={2}
       sx={{
-        p: 2,
-        height: '100%'
+        width: '100%',
+        height: '100%',
+        padding: 2,
+        boxSizing: 'border-box'
       }}
     >
       <Box>
@@ -83,7 +88,7 @@ const ChatUI: React.FC<ChatUIProps> = ({
       <Box>
         <ChatInput
           placeholder={inputPlaceholder}
-          disabled={errorMessage !== null}
+          disabled={errorMessage !== null || loading}
           onSend={handleSend}
         />
       </Box>
